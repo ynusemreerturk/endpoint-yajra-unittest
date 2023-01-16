@@ -10,19 +10,128 @@ use Illuminate\Support\Facades\Log;
 use Validator;
 
 
+
+/**
+ * @OA\Info(
+ *      version="1.0.0",
+ *      title="Laravel OpenApi Demo Documentation",
+ *      description="L5 Swagger OpenApi description",
+ * )
+ */
 class ApiController extends Controller
 {
+    /**
+     * @OA\Get(
+     *      path="/api/getAll",
+     *      tags={"Users"},
+     *      description="Returns All User",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     *     )
+     */
     public function getAll(){
         $user = User::all();
         return response()->json(["total_user" => count($user) , "users" => $user]);
     }
-    public  function getById($id){
-        $user = User::find($id);
+
+    /**
+     * @OA\Get(
+     *      path="/api/getById",
+     *      tags={"Users"},
+     *      description="Returns User with by Id",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          type="integer"
+     *      )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     *     )
+     */
+
+    public function getById(Request $request){
+        $user = User::find($request->id);
         if (isset($user)){
             return response()->json(["user" => $user]);
         }
         return ('Bu id\'ye sahip kullanici Yok');
     }
+
+    /**
+     * @OA\POST(
+     *      path="/api/create",
+     *      tags={"Users"},
+     *      description="Returns User with by Id",
+     *      @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          type="string"
+     *      )
+     *      ),
+     *     @OA\Parameter(
+     *         name="email",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          type="string"
+     *      )
+     *      ),
+     *     @OA\Parameter(
+     *         name="password",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          format = "password"
+     *      )
+     *      ),
+     *     @OA\Parameter(
+     *         name="password_confirmation",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          format = "password"
+     *      )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     *     )
+     */
+
     public function create(Request $request){
         $rules = Validator::make($request->all(),
             [
@@ -38,10 +147,69 @@ class ApiController extends Controller
             $user->email = $request->email;
             $user->password = bcrypt($request->password);
             $user->save();
-        return ('User olustutuldu');
+        return ('User olusturuldu');
     }
-    public function update($id,Request $request){
-        $user = User::find($id);
+    /**
+     * @OA\PUT(
+     *      path="/api/update",
+     *      tags={"Users"},
+     *      description="Returns User with by Id",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          type="integer"
+     *      )
+     *      ),
+     *      @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          type="string"
+     *      )
+     *      ),
+     *     @OA\Parameter(
+     *         name="email",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          type="string"
+     *      )
+     *      ),
+     *     @OA\Parameter(
+     *         name="password",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          format = "password"
+     *      )
+     *      ),
+     *     @OA\Parameter(
+     *         name="password_confirmation",
+     *         in="query",
+     *         required=true,
+     *      @OA\Schema (
+     *          format = "password"
+     *      )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     *     )
+     */
+    public function update(Request $request){
+        $user = User::find($request->id);
         if(isset($user)){
             $rules = Validator::make($request->all(),
                 [
@@ -60,13 +228,26 @@ class ApiController extends Controller
         }
         return ('Bu id\'ye sahip kullanici yok ');
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function createtwo($name,$email,$password,$password_confirmation){
         $request = ['name'=>$name,'email'=>$email,'password'=>$password,'password_confirmation'=>$password_confirmation];
         $rules = Validator::make($request,
             [
                 'name' => 'required  | min:3 | regex:/^[a-zA-Z şŞıİçÇöÖüÜĞğ]+$/',
                 'email' => 'required | email | unique:users,email',
-                'password' => ['required' , 'min:6' , 'confirmed' , 'regex:/^.*(?=.{3,})(?=.*[a-zA-Z şŞıİçÇöÖüÜĞğ])(?=.*[0-9])(?=.*[\d\x])(?=.*[.,;₺!$#%]).*$/'],
+                'password' => ['required' , 'min:6' , 'confirmed' , 'regex:/^.*(?=.{3,})(?=.*[a-zA-Z şŞıİçÇöÖüÜĞğ])(?=.*[0-9])(?=.*[\d\x])(?=.*[.,;₺!$#%+]).*$/'],
             ]);
         if ($rules->fails()) {
             return response()->json(["Errors"=>$rules->messages()]);
